@@ -28,12 +28,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Install Rust Stable
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
 
       - name: Install NPM Dependencies
         run: npm install
+
+      - name: Verify tauri script exists
+        run: npm run
 
       - name: Build Tauri Desktop (.exe & .msi)
         uses: tauri-apps/tauri-action@v0
@@ -44,9 +55,9 @@ jobs:
           releaseName: 'SoalCreator Desktop v__VERSION__'
           releaseBody: |
             ## 🚀 Lufya CBT - SoalCreator Studio Desktop Release
-            
+
             Aplikasi Desktop Mandiri Pembuat Soal Word & Excel CBT (100% Offline tanpa XAMPP/PHP).
-            
+
             ### Fitur Utama:
             - **Super Ringan & Cepat:** Ukuran installer kecil dan hemat memori RAM.
             - **Ekspor Word (.docx):** Format Tabel 3-Kolom resmi CBT & Format Linier.
@@ -55,6 +66,7 @@ jobs:
             - **100% Offline:** Bekerja langsung di laptop/PC tanpa butuh koneksi internet atau server lokal.
           releaseDraft: false
           prerelease: false
+          tauriScript: npx tauri
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
