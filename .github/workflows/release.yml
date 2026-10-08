@@ -1,0 +1,68 @@
+name: Release SoalCreator Desktop
+
+on:
+  push:
+    tags:
+      - 'v*'
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust Stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install NPM Dependencies
+        run: npm install
+
+      - name: Build Tauri Desktop (.exe & .msi)
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: 'SoalCreator Desktop v__VERSION__'
+          releaseBody: |
+            ## 🚀 Lufya CBT - SoalCreator Studio Desktop Release
+            
+            Aplikasi Desktop Mandiri Pembuat Soal Word & Excel CBT (100% Offline tanpa XAMPP/PHP).
+            
+            ### Fitur Utama:
+            - **Super Ringan & Cepat:** Ukuran installer kecil dan hemat memori RAM.
+            - **Ekspor Word (.docx):** Format Tabel 3-Kolom resmi CBT & Format Linier.
+            - **Ekspor Excel (.xlsx):** Format standar 11-kolom template import Lufya CBT.
+            - **Mode Lengkap:** Matematika (Formula KaTeX), Bahasa Arab (RTL & Harakat), Umum, dan AI Master Prompt.
+            - **100% Offline:** Bekerja langsung di laptop/PC tanpa butuh koneksi internet atau server lokal.
+          releaseDraft: false
+          prerelease: false
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: creatorsoal-windows-build
+          path: |
+            src-tauri/target/release/creatorsoal.exe
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi
+          if-no-files-found: warn

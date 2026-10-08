@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoalCreator Studio - Pembuat Soal Word & Excel CBT Mandiri</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/img/icon-512.png">
+    
+    <!-- Google Fonts & Lucide Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+    <script src="assets/libs/lucide.min.js"></script>
+    
+    <!-- Client-Side Exporter Libraries (100% Standalone Offline) -->
+    <script src="assets/libs/FileSaver.min.js"></script>
+    <script src="assets/libs/xlsx.full.min.js"></script>
+    <script src="assets/libs/docx.min.js"></script>
+    
+    <!-- SoalCreator Stylesheet -->
+    <link rel="stylesheet" href="assets/css/creator.css">
+</head>
+<body>
+
+    <!-- 1. TOP NAVBAR -->
+    <header class="creator-navbar">
+        <div class="creator-navbar-inner">
+            <a href="index.html" class="creator-logo" onclick="event.preventDefault(); CreatorApp.returnToHub();">
+                <img src="assets/img/logo.png" alt="Logo" class="creator-logo-img" onerror="this.src='assets/img/icon-512.png'; this.onerror=function(){this.style.display='none'; document.getElementById('defaultLogoIcon').style.display='flex';};">
+                <div id="defaultLogoIcon" class="creator-logo-icon" style="display: none;">
+                    <i data-lucide="pen-tool" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div class="creator-logo-text">
+                    <span class="creator-logo-title">Lufya CBT</span>
+                    <span class="creator-logo-sub">SoalCreator</span>
+                </div>
+            </a>
+
+            <!-- A. LANDING NAVBAR LINKS (Displayed ONLY on Landing Hub) -->
+            <nav id="landingNavLinks" class="landing-nav-links">
+                <button type="button" class="landing-nav-btn" onclick="document.getElementById('tutorialSection').scrollIntoView({behavior: 'smooth'})">
+                    <i data-lucide="compass" style="width: 15px; height: 15px;"></i>
+                    <span>Alur</span>
+                </button>
+                <button type="button" class="landing-nav-btn" onclick="document.getElementById('modeSelectionSection').scrollIntoView({behavior: 'smooth'})">
+                    <i data-lucide="layout-grid" style="width: 15px; height: 15px;"></i>
+                    <span>Jenis Soal</span>
+                </button>
+                <button type="button" class="landing-nav-btn" onclick="document.getElementById('developerSection').scrollIntoView({behavior: 'smooth'})">
+                    <i data-lucide="info" style="width: 15px; height: 15px;"></i>
+                    <span>Info</span>
+                </button>
+            </nav>
+
+            <!-- B. WORKSPACE NAVBAR CONTROLS (Displayed ONLY when inside Workspace Editor) -->
+            <div id="workspaceNavActions" class="creator-nav-actions" style="display: none;">
+                <!-- Active Mode Pill & Switcher -->
+                <div id="navModeIndicator" class="navbar-mode-indicator">
+                    <i data-lucide="layers" style="width: 14px; height: 14px; color: var(--brand-600);"></i>
+                    <span id="navModeText">Mode: Umum</span>
+                    <button type="button" class="btn-c btn-c-outline" style="padding: 2px 8px; font-size: 0.6875rem; margin-left: 4px;" onclick="CreatorApp.returnToHub()">
+                        Ganti Mode
+                    </button>
+                </div>
+
+                <!-- AI Master Prompt Button -->
+                <button type="button" class="btn-c btn-c-purple" onclick="AIPromptModule.openModal(document.getElementById('metaSubject')?.value || '')" title="Buat Prompt AI & Import JSON">
+                    <i data-lucide="bot" style="width: 15px; height: 15px;"></i>
+                    <span>AI Master Prompt</span>
+                </button>
+
+                <button type="button" class="btn-c btn-c-outline" onclick="CreatorApp.openQuickPasteModal()" title="Smart Quick Paste">
+                    <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
+                    <span>Smart Quick Paste</span>
+                </button>
+
+                <button type="button" class="btn-c btn-c-outline" onclick="CreatorApp.addQuestion()" title="Tambah Soal Baru">
+                    <i data-lucide="plus" style="width: 15px; height: 15px;"></i>
+                    <span>Tambah Soal</span>
+                </button>
+
+                <button type="button" class="btn-c btn-c-outline" onclick="CreatorApp.openLivePreview()" title="Preview Naskah Soal">
+                    <i data-lucide="eye" style="width: 15px; height: 15px;"></i>
+                    <span>Preview</span>
+                </button>
+
+                <!-- Draft Actions -->
+                <div class="dropdown-wrapper">
+                    <button type="button" class="btn-c btn-c-outline dropdown-toggle">
+                        <i data-lucide="save" style="width: 15px; height: 15px;"></i>
+                        <span>Draft</span>
+                        <i data-lucide="chevron-down" style="width: 13px; height: 13px;"></i>
+                    </button>
+                    <div class="dropdown-menu-c">
+                        <button type="button" class="dropdown-item-c" onclick="CreatorApp.exportJsonDraft()">
+                            <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+                            <div>
+                                Simpan Draft JSON
+                                <small>Unduh file draft ke komputer</small>
+                            </div>
+                        </button>
+                        <button type="button" class="dropdown-item-c" onclick="CreatorApp.importJsonDraft()">
+                            <i data-lucide="upload" style="width: 16px; height: 16px;"></i>
+                            <div>
+                                Buka Draft JSON
+                                <small>Muat naskah dari file JSON</small>
+                            </div>
+                        </button>
+                        <hr style="margin: 4px 0; border: none; border-top: 1px solid var(--border-color);">
+                        <button type="button" class="dropdown-item-c" style="color: var(--danger);" onclick="CreatorApp.clearAllDraft()">
+                            <i data-lucide="rotate-ccw" style="width: 16px; height: 16px;"></i>
+                            <div>
+                                Reset Semua Soal
+                                <small>Hapus draft & mulai baru</small>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Export Master Dropdown -->
+                <div class="dropdown-wrapper">
+                    <button type="button" class="btn-c btn-c-primary dropdown-toggle">
+                        <i data-lucide="download" style="width: 15px; height: 15px;"></i>
+                        <span>Download Soal</span>
+                        <i data-lucide="chevron-down" style="width: 13px; height: 13px;"></i>
+                    </button>
+                    <div class="dropdown-menu-c">
+                        <button type="button" class="dropdown-item-c" onclick="CreatorApp.submitExport('docx_table')">
+                            <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--brand-600);"></i>
+                            <div>
+                                <strong>Word Format Tabel (.docx)</strong>
+                                <small>Standar tabel 3-kolom CBT resmi</small>
+                            </div>
+                        </button>
+                        <button type="button" class="dropdown-item-c" onclick="CreatorApp.submitExport('docx_linear')">
+                            <i data-lucide="align-left" style="width: 16px; height: 16px; color: #0284c7;"></i>
+                            <div>
+                                <strong>Word Format Linier (.docx)</strong>
+                                <small>Format paragraf bersusun rapi</small>
+                            </div>
+                        </button>
+                        <button type="button" class="dropdown-item-c" onclick="CreatorApp.submitExport('excel')">
+                            <i data-lucide="sheet" style="width: 16px; height: 16px; color: #16a34a;"></i>
+                            <div>
+                                <strong>Excel Spreadsheet (.xlsx)</strong>
+                                <small>11 Kolom standar import CBT</small>
+                            </div>
+                        </button>
+                        <button type="button" class="dropdown-item-c" onclick="CreatorApp.submitExport('txt')">
+                            <i data-lucide="file-code" style="width: 16px; height: 16px; color: #64748b;"></i>
+                            <div>
+                                <strong>Berkas Plain Teks (.txt)</strong>
+                                <small>Teks UTF-8 murni</small>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- C. MOBILE DRAWER TOGGLE (Visible on mobile/tablet) -->
+            <button type="button" class="mobile-drawer-toggle" id="mobileDrawerToggle" onclick="CreatorApp.toggleMobileDrawer()" aria-label="Menu Navigasi">
+                <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MOBILE OFF-CANVAS SIDE DRAWER (Slides from Left) -->
+    <div id="mobileDrawerBackdrop" class="mobile-drawer-backdrop" onclick="CreatorApp.closeMobileDrawer()"></div>
+    <aside id="mobileDrawer" class="mobile-drawer" aria-label="Mobile Navigation Drawer">
+        <div class="mobile-drawer-header">
+            <div class="creator-logo" style="gap: 8px;">
+                <div class="creator-logo-icon" style="width: 32px; height: 32px;">
+                    <i data-lucide="pen-tool" style="width: 16px; height: 16px;"></i>
+                </div>
+                <div class="creator-logo-text">
+                    <span class="creator-logo-title" style="font-size: 0.95rem;">Lufya CBT</span>
+                    <span class="creator-logo-sub" style="font-size: 0.65rem;">SoalCreator</span>
+                </div>
+            </div>
+            <button type="button" class="mobile-drawer-close" onclick="CreatorApp.closeMobileDrawer()" aria-label="Tutup Menu">
+                <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+            </button>
+        </div>
+
+        <div class="mobile-drawer-body">
+            <!-- Mode Status Pill in Drawer -->
+            <div class="mobile-drawer-section">
+                <div class="mobile-drawer-label">STATUS MODE</div>
+                <div id="drawerModeStatus" class="mobile-drawer-modepill">
+                    <i data-lucide="layers" style="width: 15px; height: 15px; color: var(--brand-600);"></i>
+                    <span id="drawerModeText">Beranda Hub</span>
+                </div>
+            </div>
+
+            <!-- Landing Navigation Links -->
+            <div class="mobile-drawer-section">
+                <div class="mobile-drawer-label">NAVIGASI MENU</div>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); CreatorApp.returnToHub();">
+                    <i data-lucide="home" style="width: 17px; height: 17px;"></i>
+                    <span>Beranda Hub</span>
+                </button>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); document.getElementById('tutorialSection')?.scrollIntoView({behavior: 'smooth'});">
+                    <i data-lucide="compass" style="width: 17px; height: 17px;"></i>
+                    <span>Alur Pembuatan Soal</span>
+                </button>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); document.getElementById('modeSelectionSection')?.scrollIntoView({behavior: 'smooth'});">
+                    <i data-lucide="layout-grid" style="width: 17px; height: 17px;"></i>
+                    <span>Pilihan Jenis Soal</span>
+                </button>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); CreatorApp.openDevInfoModal();">
+                    <i data-lucide="info" style="width: 17px; height: 17px;"></i>
+                    <span>Informasi Pengembang</span>
+                </button>
+            </div>
+
+            <!-- Quick Studio Selection in Drawer -->
+            <div class="mobile-drawer-section">
+                <div class="mobile-drawer-label">PILIH MODE STUDIO</div>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); CreatorApp.selectMode('matematika');">
+                    <i data-lucide="sigma" style="width: 17px; height: 17px; color: #2563eb;"></i>
+                    <span>Matematika & Sains</span>
+                </button>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); CreatorApp.selectMode('arab');">
+                    <i data-lucide="languages" style="width: 17px; height: 17px; color: #059669;"></i>
+                    <span>Bahasa Arab & PAI</span>
+                </button>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); CreatorApp.selectMode('umum');">
+                    <i data-lucide="book-open" style="width: 17px; height: 17px; color: #7c3aed;"></i>
+                    <span>Umum & Bahasa</span>
+                </button>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); CreatorApp.openAiLab();">
+                    <i data-lucide="bot" style="width: 17px; height: 17px; color: #d97706;"></i>
+                    <span>AI Prompt Lab</span>
+                </button>
+            </div>
+
+            <!-- Workspace Actions in Drawer (Only visible when inside editor) -->
+            <div id="drawerWorkspaceActions" class="mobile-drawer-section" style="display: none;">
+                <div class="mobile-drawer-label">AKSI EDITOR SOAL</div>
+                <button type="button" class="mobile-drawer-item highlight-purple" onclick="CreatorApp.closeMobileDrawer(); AIPromptModule.openModal(document.getElementById('metaSubject')?.value || '');">
+                    <i data-lucide="bot" style="width: 17px; height: 17px;"></i>
+                    <span>AI Master Prompt</span>
+                </button>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); CreatorApp.openQuickPasteModal();">
+                    <i data-lucide="sparkles" style="width: 17px; height: 17px;"></i>
+                    <span>Smart Quick Paste</span>
+                </button>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); CreatorApp.addQuestion();">
+                    <i data-lucide="plus" style="width: 17px; height: 17px;"></i>
+                    <span>Tambah Soal Baru</span>
+                </button>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); CreatorApp.openLivePreview();">
+                    <i data-lucide="eye" style="width: 17px; height: 17px;"></i>
+                    <span>Preview Naskah</span>
+                </button>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); CreatorApp.exportJsonDraft();">
+                    <i data-lucide="download" style="width: 17px; height: 17px;"></i>
+                    <span>Simpan Draft JSON</span>
+                </button>
+                <button type="button" class="mobile-drawer-item" onclick="CreatorApp.closeMobileDrawer(); CreatorApp.importJsonDraft();">
+                    <i data-lucide="upload" style="width: 17px; height: 17px;"></i>
+                    <span>Buka Draft JSON</span>
+                </button>
+                <button type="button" class="mobile-drawer-item text-danger" onclick="CreatorApp.closeMobileDrawer(); CreatorApp.clearAllDraft();">
+                    <i data-lucide="rotate-ccw" style="width: 17px; height: 17px;"></i>
+                    <span>Reset Semua Soal</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 2. MAIN HUB & WORKSPACE CONTAINER -->
+    <main class="creator-container" style="padding: 0;">
+
+        <!-- =========================================================================
+             A. LANDING PAGE HUB & MODE SELECTOR
+             ========================================================================= -->
+        <section id="landingHubSection" class="landing-hub">
+            <div class="hub-hero">
+                <h1 class="hub-hero-title">Buat Naskah Soal Ujian Berkualitas Lebih Cepat</h1>
+                <p class="hub-hero-desc">
+                    Pilih mode mata pelajaran di bawah untuk mengaktifkan antarmuka studio khusus dengan alat bantu rumus KaTeX, tata letak Bahasa Arab (RTL), generator prompt AI, serta ekspor Word & Excel instan.
+                </p>
+            </div>
+
+            <!-- Tutorial 4-Step Timeline -->
+            <div id="tutorialSection" class="tutorial-steps-container">
+                <div class="tutorial-title">
+                    <i data-lucide="compass" style="width: 18px; height: 18px; color: var(--brand-600);"></i>
+                    <span>Alur Pembuatan Naskah Soal</span>
+                </div>
+                <div class="tutorial-steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Pilih Mode Studio</div>
+                        <div class="step-desc">Pilih mode Matematika, Bahasa Arab, Umum, atau AI Prompt Lab sesuai kebutuhan ujian.</div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Racik Soal / AI Prompt</div>
+                        <div class="step-desc">Tulis manual, gunakan Smart Quick Paste, atau buat soal otomatis via AI Master Prompt.</div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Pratinjau Naskah</div>
+                        <div class="step-desc">Cek ketepatan tata letak, gambar, opsi jawaban, kunci, dan pembahasan pada Live Preview.</div>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Download & Import CBT</div>
+                        <div class="step-desc">Unduh format Word Tabel 3-Kolom atau Excel 11-Kolom dan langsung import ke CBT.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mode Selection Grid -->
+            <div id="modeSelectionSection" class="mode-selection-header">
+                <h2 class="mode-selection-title">Pilih Mode Studio Pembuatan Soal</h2>
+                <p class="mode-selection-subtitle">Setiap mode dirancang dengan alat bantu khusus yang relevan untuk mata pelajaran Anda.</p>
+            </div>
+
+            <div class="mode-cards-grid">
+                <!-- Mode 1: Matematika & Eksakta -->
+                <div class="mode-card card-matematika" onclick="CreatorApp.selectMode('matematika')">
+                    <div>
+                        <div class="mode-card-header">
+                            <div class="mode-card-icon icon-blue">
+                                <i data-lucide="sigma" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <span class="mode-card-badge badge-blue">Eksakta</span>
+                        </div>
+                        <h3 class="mode-card-title">Matematika & Sains</h3>
+                        <p class="mode-card-desc">
+                            Dilengkapi palet rumus visual KaTeX/LaTeX, pecahan, akar, integral, matriks, dan notasi rumus eksakta lengkap.
+                        </p>
+                        <ul class="mode-card-features">
+                            <li><i data-lucide="check-circle-2"></i> Palet Formula KaTeX / LaTeX Lengkap</li>
+                            <li><i data-lucide="check-circle-2"></i> Live Render Notasi Matematika</li>
+                            <li><i data-lucide="check-circle-2"></i> Sisipkan Gambar & Tabel Perhitungan</li>
+                        </ul>
+                    </div>
+                    <button type="button" class="mode-card-btn btn-card-blue" onclick="event.stopPropagation(); CreatorApp.selectMode('matematika');">
+                        <span>Buka Studio Matematika</span>
+                        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </div>
+
+                <!-- Mode 2: Bahasa Arab & PAI -->
+                <div class="mode-card card-arab" onclick="CreatorApp.selectMode('arab')">
+                    <div>
+                        <div class="mode-card-header">
+                            <div class="mode-card-icon icon-emerald">
+                                <i data-lucide="languages" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <span class="mode-card-badge badge-emerald">RTL & PAI</span>
+                        </div>
+                        <h3 class="mode-card-title">Bahasa Arab & PAI</h3>
+                        <p class="mode-card-desc">
+                            Arah penulisan otomatis Kanan-ke-Kiri (RTL), tipografi font Amiri elegan, serta keyboard virtual tanda harakat lengkap.
+                        </p>
+                        <ul class="mode-card-features">
+                            <li><i data-lucide="check-circle-2"></i> Auto RTL (Right-to-Left) & Font Amiri</li>
+                            <li><i data-lucide="check-circle-2"></i> Palet Harakat & Tanda Baca Al-Qur'an</li>
+                            <li><i data-lucide="check-circle-2"></i> Normalisasi Font Standar Browser CBT</li>
+                        </ul>
+                    </div>
+                    <button type="button" class="mode-card-btn btn-card-emerald" onclick="event.stopPropagation(); CreatorApp.selectMode('arab');">
+                        <span>Buka Studio Bahasa Arab</span>
+                        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </div>
+
+                <!-- Mode 3: Umum & Bahasa -->
+                <div class="mode-card card-umum" onclick="CreatorApp.selectMode('umum')">
+                    <div>
+                        <div class="mode-card-header">
+                            <div class="mode-card-icon icon-purple">
+                                <i data-lucide="book-open" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <span class="mode-card-badge badge-purple">Fleksibel</span>
+                        </div>
+                        <h3 class="mode-card-title">Umum & Bahasa</h3>
+                        <p class="mode-card-desc">
+                            Cocok untuk Bahasa Indonesia, Bahasa Inggris, IPS, PKn, dan seluruh mapel dengan formatting teks kaya & gambar.
+                        </p>
+                        <ul class="mode-card-features">
+                            <li><i data-lucide="check-circle-2"></i> Smart Quick Paste Naskah Word/PDF</li>
+                            <li><i data-lucide="check-circle-2"></i> Format Teks Kaya (Bold, Italic, Tabel)</li>
+                            <li><i data-lucide="check-circle-2"></i> Upload Gambar Screenshot Langsung (Ctrl+V)</li>
+                        </ul>
+                    </div>
+                    <button type="button" class="mode-card-btn btn-card-purple" onclick="event.stopPropagation(); CreatorApp.selectMode('umum');">
+                        <span>Buka Studio Umum</span>
+                        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </div>
+
+                <!-- Mode 4: AI Prompt Generator & Importer -->
+                <div class="mode-card card-ai" onclick="CreatorApp.openAiLab()">
+                    <div>
+                        <div class="mode-card-header">
+                            <div class="mode-card-icon icon-amber">
+                                <i data-lucide="bot" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <span class="mode-card-badge badge-amber">AI Master</span>
+                        </div>
+                        <h3 class="mode-card-title">AI Prompt Lab</h3>
+                        <p class="mode-card-desc">
+                            Generator prompt khusus untuk ChatGPT/Claude/Gemini dan impor instan 1-klik hasil JSON ke studio soal.
+                        </p>
+                        <ul class="mode-card-features">
+                            <li><i data-lucide="check-circle-2"></i> Generator Master Prompt AI (JSON/Teks)</li>
+                            <li><i data-lucide="check-circle-2"></i> Direct 1-Click AI JSON Importer</li>
+                            <li><i data-lucide="check-circle-2"></i> Standar Soal HOTS & Beragam Mapel</li>
+                        </ul>
+                    </div>
+                    <button type="button" class="mode-card-btn btn-card-amber" onclick="event.stopPropagation(); CreatorApp.openAiLab();">
+                        <span>Buka AI Master Prompt</span>
+                        <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Developer Information Section on Landing Page -->
+            <div id="developerSection" class="dev-landing-section" style="margin-top: 50px; padding-top: 36px; border-top: 1px solid var(--border-color);">
+                <div style="text-align: center; margin-bottom: 28px;">
+                    <span class="creator-logo-badge" style="font-size: 0.75rem; margin-bottom: 8px; display: inline-block;">Pusat Bantuan & Pengembang</span>
+                    <h2 style="font-size: 1.375rem; font-weight: 800; color: var(--text-main);">Informasi Pengembang Lufya CBT</h2>
+                    <p style="font-size: 0.875rem; color: var(--text-muted); max-width: 600px; margin: 6px auto 0;">
+                        Hubungi tim pengembang resmi untuk konsultasi implementasi, bantuan teknis, update berkala, maupun lisensi sistem.
+                    </p>
+                </div>
+
+                <div class="dev-contact-grid" style="max-width: 860px; margin: 0 auto;">
+                    <a href="https://wa.me/6289690361144" target="_blank" class="dev-contact-item" title="Hubungi WhatsApp Support">
+                        <div class="dev-icon icon-wa">
+                            <i data-lucide="message-circle" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div class="dev-info-text">
+                            <strong>WhatsApp Support</strong>
+                            <small>089690361144</small>
+                        </div>
+                    </a>
+
+                    <a href="mailto:cs.kioskode@gmail.com" target="_blank" class="dev-contact-item" title="Kirim Email Dukungan">
+                        <div class="dev-icon icon-email">
+                            <i data-lucide="mail" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div class="dev-info-text">
+                            <strong>Email Resmi</strong>
+                            <small>cs.kioskode@gmail.com</small>
+                        </div>
+                    </a>
+
+                    <a href="https://kioskode.my.id" target="_blank" class="dev-contact-item" title="Kunjungi Website Resmi">
+                        <div class="dev-icon icon-web">
+                            <i data-lucide="globe" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div class="dev-info-text">
+                            <strong>Website Resmi</strong>
+                            <small>kioskode.my.id</small>
+                        </div>
+                    </a>
+
+                    <a href="https://lynk.id/kioskode" target="_blank" class="dev-contact-item" title="Kunjungi Toko / Marketplace">
+                        <div class="dev-icon icon-toko">
+                            <i data-lucide="shopping-bag" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div class="dev-info-text">
+                            <strong>Toko / Marketplace</strong>
+                            <small>lynk.id/kioskode</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================================
+             B. WORKSPACE EDITOR SECTION
+             ========================================================================= -->
+        <section id="workspaceSection" class="workspace-wrapper" style="display: none; padding: 24px 20px 60px; max-width: 1400px; margin: 0 auto;">
+
+            <!-- Studio Header Bar (Breadcrumb & Guide Toggle) -->
+            <div class="workspace-header-bar">
+                <div class="workspace-breadcrumb">
+                    <button type="button" class="btn-c btn-c-outline btn-return-hub" onclick="CreatorApp.returnToHub()" title="Kembali ke Beranda Pilihan Mode">
+                        <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i>
+                        <span>Kembali ke Hub</span>
+                    </button>
+                    <div class="breadcrumb-separator">/</div>
+                    <div class="breadcrumb-title">
+                        <span class="breadcrumb-title-text">Studio Lembar Kerja Soal</span>
+                        <span id="workspaceModePill" class="creator-logo-badge badge-purple">Mode: Umum</span>
+                    </div>
+                </div>
+
+                <div class="workspace-header-actions">
+                    <button type="button" class="btn-c btn-c-outline btn-guide-toggle" onclick="CreatorApp.toggleUsageGuide()" title="Buka / Tutup Petunjuk Penggunaan">
+                        <i data-lucide="help-circle" style="width: 15px; height: 15px; color: var(--brand-600);"></i>
+                        <span>Catatan Penggunaan & Tips</span>
+                        <i data-lucide="chevron-down" id="guideChevron" style="width: 14px; height: 14px; transition: transform 0.2s ease;"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Catatan Penggunaan & Tips Guru (Collapsible Guide Card) -->
+            <div id="usageGuideSection" class="usage-guide-card" style="display: none;">
+                <div class="usage-guide-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="book-open-check" style="width: 20px; height: 20px; color: var(--brand-600);"></i>
+                        <h4 style="margin: 0; font-size: 0.9375rem; font-weight: 800; color: var(--text-main);">Catatan & Panduan Penggunaan SoalCreator</h4>
+                    </div>
+                    <button type="button" class="tool-btn btn-icon-only" onclick="CreatorApp.toggleUsageGuide()" title="Tutup Panduan">
+                        <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                    </button>
+                </div>
+                <div class="usage-guide-grid">
+                    <div class="guide-item">
+                        <div class="guide-item-icon icon-blue"><i data-lucide="sparkles" style="width: 16px; height: 16px;"></i></div>
+                        <div>
+                            <strong>1. Smart Quick Paste</strong>
+                            <p>Tempelkan naskah teks dari Word/PDF dengan format nomor (contoh: <code>1. Soal... A. Opsi A B. Opsi B ... Kunci: A</code>) untuk konversi instan ke kartu soal.</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <div class="guide-item-icon icon-emerald"><i data-lucide="sigma" style="width: 16px; height: 16px;"></i></div>
+                        <div>
+                            <strong>2. Formula KaTeX / LaTeX</strong>
+                            <p>Klik tombol <strong>"Rumus Math"</strong> atau gunakan sintaks LaTeX KaTeX (contoh: <code>\frac{a}{b}</code>, <code>\sqrt{x}</code>, <code>x^2</code>) untuk rumus matematika & sains.</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <div class="guide-item-icon icon-amber"><i data-lucide="languages" style="width: 16px; height: 16px;"></i></div>
+                        <div>
+                            <strong>3. Bahasa Arab & Harakat</strong>
+                            <p>Gunakan palet virtual <strong>"Harakat"</strong> untuk tanda baca lengkap Al-Qur'an. Mode Arab otomatis mengatur arah teks Kanan-ke-Kiri (RTL) & font Amiri.</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <div class="guide-item-icon icon-purple"><i data-lucide="image" style="width: 16px; height: 16px;"></i></div>
+                        <div>
+                            <strong>4. Upload / Paste Gambar (Ctrl+V)</strong>
+                            <p>Bisa langsung tekan <strong>Ctrl+V</strong> untuk menempelkan gambar screenshot dari clipboard ke area teks soal atau opsi pilihan jawaban.</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <div class="guide-item-icon icon-indigo"><i data-lucide="bot" style="width: 16px; height: 16px;"></i></div>
+                        <div>
+                            <strong>5. AI Master Prompt</strong>
+                            <p>Gunakan menu AI Prompt untuk meracik prompt berstandar HOTS di ChatGPT/Gemini dan impor kembali hasilnya langsung dengan 1-klik.</p>
+                        </div>
+                    </div>
+                    <div class="guide-item">
+                        <div class="guide-item-icon icon-teal"><i data-lucide="file-check-2" style="width: 16px; height: 16px;"></i></div>
+                        <div>
+                            <strong>6. Ekspor Word & Excel CBT</strong>
+                            <p>Klik tombol <strong>"Download Soal"</strong> di navbar atas untuk mengunduh Word Tabel 3-Kolom, Word Linier, atau Template Excel CBT.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metadata Information Card -->
+            <div class="metadata-card">
+                <div class="metadata-grid">
+                    <div class="form-field-c">
+                        <label class="form-label-c"><i data-lucide="file-text" style="width: 13px; height: 13px; margin-right: 4px;"></i> Judul Bank Soal</label>
+                        <input type="text" id="metaBankName" class="form-input-c" placeholder="Contoh: PAT Matematika Kelas X">
+                    </div>
+                    <div class="form-field-c">
+                        <label class="form-label-c"><i data-lucide="hash" style="width: 13px; height: 13px; margin-right: 4px;"></i> Kode Bank Soal</label>
+                        <input type="text" id="metaBankCode" class="form-input-c" placeholder="Contoh: MTK-X-2026">
+                    </div>
+                    <div class="form-field-c">
+                        <label class="form-label-c"><i data-lucide="book" style="width: 13px; height: 13px; margin-right: 4px;"></i> Mata Pelajaran</label>
+                        <input type="text" id="metaSubject" class="form-input-c" placeholder="Contoh: Matematika Wajib">
+                    </div>
+                    <div class="form-field-c">
+                        <label class="form-label-c"><i data-lucide="graduation-cap" style="width: 13px; height: 13px; margin-right: 4px;"></i> Jenjang / Kelas</label>
+                        <select id="metaGrade" class="form-select-c">
+                            <option value="X">Kelas 10 (SMA/MA/SMK)</option>
+                            <option value="XI">Kelas 11 (SMA/MA/SMK)</option>
+                            <option value="XII">Kelas 12 (SMA/MA/SMK)</option>
+                            <option value="VII">Kelas 7 (SMP/MTs)</option>
+                            <option value="VIII">Kelas 8 (SMP/MTs)</option>
+                            <option value="IX">Kelas 9 (SMP/MTs)</option>
+                            <option value="SD">Tingkat SD / MI</option>
+                            <option value="UMUM">Umum / Semua Tingkat</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticky Stats Bar (3-Column Equal Grid) -->
+            <div class="stats-banner">
+                <div class="stat-badge">
+                    <div class="stat-badge-icon icon-blue">
+                        <i data-lucide="list-ordered" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div class="stat-badge-text">
+                        <span class="stat-badge-label">Total Soal</span>
+                        <span class="stat-badge-val"><strong id="statTotalQ">0</strong> butir</span>
+                    </div>
+                </div>
+                <div class="stat-badge">
+                    <div class="stat-badge-icon icon-amber">
+                        <i data-lucide="award" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div class="stat-badge-text">
+                        <span class="stat-badge-label">Total Skor Nilai</span>
+                        <span class="stat-badge-val"><strong id="statTotalScore">0.0</strong></span>
+                    </div>
+                </div>
+                <div class="stat-badge">
+                    <div class="stat-badge-icon icon-emerald">
+                        <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div class="stat-badge-text">
+                        <span class="stat-badge-label">Kunci Jawaban</span>
+                        <span class="stat-badge-val"><strong id="statAnsweredKeys">0/0</strong> terisi</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Cards Dynamic Container -->
+            <div id="questionListContainer" class="q-cards-container">
+                <!-- Dynamically populated by creator.js -->
+            </div>
+
+            <!-- Empty State Fallback (Modern Centered Card) -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">
+                    <i data-lucide="file-plus-2" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h3 class="empty-state-title">Belum Ada Butir Soal di Lembar Kerja</h3>
+                <p class="empty-state-desc">
+                    Mulai dengan menambahkan butir soal baru secara manual, gunakan Smart Quick Paste untuk konversi teks, atau hasilkan soal otomatis dari AI Master Prompt.
+                </p>
+                <div class="empty-state-actions">
+                    <button type="button" class="btn-c btn-c-primary" onclick="CreatorApp.addQuestion()">
+                        <i data-lucide="plus"></i>
+                        <span>Tambah Soal Manual</span>
+                    </button>
+                    <button type="button" class="btn-c btn-c-outline" onclick="CreatorApp.openQuickPasteModal()">
+                        <i data-lucide="sparkles"></i>
+                        <span>Smart Quick Paste</span>
+                    </button>
+                    <button type="button" class="btn-c btn-c-purple" onclick="AIPromptModule.openModal(document.getElementById('metaSubject')?.value || '')">
+                        <i data-lucide="bot"></i>
+                        <span>AI Master Prompt</span>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- =========================================================================
+         MODALS
+         ========================================================================= -->
+
+    <!-- 1. SMART QUICK PASTE MODAL -->
+    <div class="c-modal-backdrop" id="modalQuickPaste">
+        <div class="c-modal" style="max-width: 760px;">
+            <div class="c-modal-header">
+                <div class="c-modal-title">
+                    <i data-lucide="sparkles" style="width: 20px; height: 20px; color: var(--brand-600);"></i>
+                    <span>Smart Quick Paste Soal (Word / PDF Text)</span>
+                </div>
+                <button type="button" class="tool-btn" onclick="CreatorApp.closeQuickPasteModal()">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+            <div class="c-modal-body">
+                <div style="background: var(--brand-50); border: 1px solid var(--brand-200); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; font-size: 0.75rem; color: var(--brand-700); line-height: 1.5;">
+                    💡 <strong>Panduan Format Teks:</strong> Tempelkan naskah teks bernomor dari Word/PDF. Parser otomatis mendeteksi teks soal, opsi A, B, C, D, E, kunci jawaban (<code>Kunci: A</code> atau <code>KUNCI = B</code>), bobot skor, dan pembahasan.
+                </div>
+                <textarea id="quickPasteRawText" rows="12" class="form-input-c" style="width: 100%; font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.5;" placeholder="Contoh:
+1. Ibu kota negara Indonesia adalah...
+A. Surabaya
+B. Bandung
+C. Jakarta
+D. Medan
+E. Semarang
+Kunci: C
+Bobot: 2
+Pembahasan: Jakarta adalah ibu kota negara.
+
+2. ..."></textarea>
+            </div>
+            <div class="c-modal-footer">
+                <button type="button" class="btn-c btn-c-outline" onclick="CreatorApp.closeQuickPasteModal()">Batal</button>
+                <button type="button" class="btn-c btn-c-primary" onclick="CreatorApp.executeQuickPaste()">
+                    <i data-lucide="arrow-down-to-line"></i>
+                    <span>Proses & Masukkan Soal</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. AI MASTER PROMPT MODAL -->
+    <div class="c-modal-backdrop" id="aiPromptModal">
+        <div class="c-modal" style="max-width: 820px;">
+            <div class="c-modal-header">
+                <div class="c-modal-title">
+                    <i data-lucide="bot" style="width: 20px; height: 20px; color: var(--purple-text);"></i>
+                    <span>AI Master Prompt</span>
+                </div>
+                <button type="button" class="tool-btn" onclick="AIPromptModule.closeModal()">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+            <div class="c-modal-body">
+                <!-- AI Tabs Navigation -->
+                <div class="ai-tab-header">
+                    <button type="button" class="ai-tab-btn active" id="aiBtnTabGen" onclick="AIPromptModule.switchTab('generator')">
+                        <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
+                        <span>1. Generator Master Prompt AI</span>
+                    </button>
+                    <button type="button" class="ai-tab-btn" id="aiBtnTabImp" onclick="AIPromptModule.switchTab('import')">
+                        <i data-lucide="file-json" style="width: 15px; height: 15px;"></i>
+                        <span>2. Import Raw JSON dari AI</span>
+                    </button>
+                </div>
+
+                <!-- Tab 1: AI Prompt Builder -->
+                <div id="aiTabGenerator">
+                    <div class="ai-form-grid">
+                        <div class="form-field-c">
+                            <label class="form-label-c">Mata Pelajaran</label>
+                            <input type="text" id="aiPromptSubject" class="form-input-c" value="Matematika" oninput="AIPromptModule.updateGeneratedPrompt()">
+                        </div>
+                        <div class="form-field-c">
+                            <label class="form-label-c">Tingkat / Kelas</label>
+                            <input type="text" id="aiPromptLevel" class="form-input-c" value="SMA Kelas 11" oninput="AIPromptModule.updateGeneratedPrompt()">
+                        </div>
+                        <div class="form-field-c" style="grid-column: span 2;">
+                            <label class="form-label-c">Materi / Topik / KD Ujian</label>
+                            <input type="text" id="aiPromptTopic" class="form-input-c" value="Persamaan Kuadrat dan Fungsi Kuadrat" oninput="AIPromptModule.updateGeneratedPrompt()">
+                        </div>
+                        <div class="form-field-c">
+                            <label class="form-label-c">Jumlah Soal</label>
+                            <input type="number" id="aiPromptCount" class="form-input-c" value="10" min="1" max="100" placeholder="Contoh: 10, 25, 40, 50" oninput="AIPromptModule.updateGeneratedPrompt()">
+                        </div>
+                        <div class="form-field-c">
+                            <label class="form-label-c">Tingkat Kesulitan</label>
+                            <select id="aiPromptDiff" class="form-select-c" onchange="AIPromptModule.updateGeneratedPrompt()">
+                                <option value="easy">Mudah</option>
+                                <option value="medium" selected>Sedang / HOTS</option>
+                                <option value="hard">Sulit / Analisis</option>
+                            </select>
+                        </div>
+                        <div class="form-field-c" style="grid-column: span 2;">
+                            <label class="form-label-c">Format Output AI</label>
+                            <select id="aiPromptFormat" class="form-select-c" onchange="AIPromptModule.updateGeneratedPrompt()">
+                                <option value="json" selected>Format JSON SoalCreator</option>
+                                <option value="text">Format Teks Linier</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                        <label class="form-label-c" style="margin-bottom: 0;">Prompt yang Dihasilkan (Siap Disalin ke ChatGPT / Claude / Gemini)</label>
+                        <button type="button" id="aiCopyPromptBtn" class="btn-c btn-c-primary" style="padding: 5px 12px; font-size: 0.75rem;" onclick="AIPromptModule.copyPromptToClipboard()">
+                            <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+                            <span>Salin Prompt</span>
+                        </button>
+                    </div>
+                    <div class="ai-prompt-preview-wrap">
+                        <textarea id="aiGeneratedPromptOutput" class="ai-prompt-textarea" readonly></textarea>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Direct JSON Importer -->
+                <div id="aiTabImport" style="display: none;">
+                    <div style="background: var(--purple-bg); border: 1px solid var(--purple-border); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 12px; font-size: 0.75rem; color: var(--purple-text); line-height: 1.5;">
+                        🚀 <strong>Cara Cepat:</strong> Setelah menyalin respons JSON dari ChatGPT / Gemini / Claude, tempelkan hasilnya pada kotak di bawah ini lalu klik tombol <strong>"Import Soal Sekarang"</strong>.
+                    </div>
+                    <textarea id="aiDirectJsonInput" rows="12" class="form-input-c" style="width: 100%; font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.5;" placeholder='Tempelkan raw JSON dari AI di sini, contoh:
+[
+  {
+    "stem": "Hasil dari 2x + 5 = 15 adalah...",
+    "options": {
+      "A": "3",
+      "B": "4",
+      "C": "5",
+      "D": "6",
+      "E": "7"
+    },
+    "correctKey": "C",
+    "score": 2,
+    "difficulty": "medium",
+    "explanation": "2x = 10, maka x = 5 (Opsi C)"
+  }
+]'></textarea>
+                </div>
+            </div>
+            <div class="c-modal-footer">
+                <button type="button" class="btn-c btn-c-outline" onclick="AIPromptModule.closeModal()">Tutup</button>
+                <button type="button" class="btn-c btn-c-purple" onclick="AIPromptModule.currentTab === 'generator' ? AIPromptModule.copyPromptToClipboard() : AIPromptModule.executeDirectImport()">
+                    <span>Terapkan / Salin</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. MATH PALETTE MODAL -->
+    <div class="c-modal-backdrop" id="modalMathPalette">
+        <div class="c-modal" style="max-width: 680px;">
+            <div class="c-modal-header">
+                <div class="c-modal-title">
+                    <i data-lucide="sigma" style="width: 20px; height: 20px; color: var(--brand-600);"></i>
+                    <span>Palet Rumus & Simbol Matematika</span>
+                </div>
+                <button type="button" class="tool-btn" onclick="MathPalette.close()">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+            <div class="c-modal-body">
+                <div id="mathPaletteContainer">
+                    <!-- Rendered by math-palette.js -->
+                </div>
+
+                <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+                    <label class="form-label-c">Atau Ketik Kode LaTeX Kustom</label>
+                    <div style="display: flex; gap: 8px; margin-top: 4px;">
+                        <input type="text" id="customLatexInput" class="form-input-c" style="flex: 1; font-family: var(--font-mono);" placeholder="Misal: \frac{x^2}{y} + \sqrt{z}">
+                        <button type="button" class="btn-c btn-c-primary" onclick="MathPalette.insertCustomLatex()">
+                            <span>Sisipkan</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="c-modal-footer">
+                <button type="button" class="btn-c btn-c-outline" onclick="MathPalette.close()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. ARABIC PALETTE MODAL -->
+    <div class="c-modal-backdrop" id="arabicPaletteModal">
+        <div class="c-modal" style="max-width: 680px;">
+            <div class="c-modal-header">
+                <div class="c-modal-title">
+                    <i data-lucide="languages" style="width: 20px; height: 20px; color: var(--success);"></i>
+                    <span>Palet Harakat & Tipografi Bahasa Arab</span>
+                </div>
+                <button type="button" class="tool-btn" onclick="ArabicPalette.closeModal()">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+            <div class="c-modal-body" id="arabicPaletteModalContent">
+                <!-- Rendered by arabic-palette.js -->
+            </div>
+            <div class="c-modal-footer">
+                <button type="button" class="btn-c btn-c-outline" onclick="ArabicPalette.closeModal()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. LIVE PREVIEW MODAL -->
+    <div class="c-modal-backdrop" id="modalLivePreview">
+        <div class="c-modal" style="max-width: 900px;">
+            <div class="c-modal-header">
+                <div class="c-modal-title">
+                    <i data-lucide="file-check" style="width: 20px; height: 20px; color: var(--success);"></i>
+                    <span>Pratinjau Naskah Soal Ujian</span>
+                </div>
+                <button type="button" class="tool-btn" onclick="CreatorApp.closeLivePreview()">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+            <div class="c-modal-body" id="livePreviewContent" style="background: #ffffff; padding: 28px;">
+                <!-- Rendered by creator.js -->
+            </div>
+            <div class="c-modal-footer">
+                <button type="button" class="btn-c btn-c-outline" onclick="window.print()">
+                    <i data-lucide="printer"></i> Cetak / PDF
+                </button>
+                <button type="button" class="btn-c btn-c-primary" onclick="CreatorApp.closeLivePreview()">Selesai</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. DEVELOPER INFO MODAL -->
+    <div class="c-modal-backdrop" id="modalDevInfo">
+        <div class="c-modal" style="max-width: 560px;">
+            <div class="c-modal-header">
+                <div class="c-modal-title">
+                    <i data-lucide="info" style="width: 20px; height: 20px; color: var(--brand-600);"></i>
+                    <span>Informasi Pengembang Lufya CBT</span>
+                </div>
+                <button type="button" class="tool-btn" onclick="CreatorApp.closeDevInfoModal()">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i>
+                </button>
+            </div>
+            <div class="c-modal-body" style="padding: 24px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img src="assets/img/logo.png" alt="Logo" style="height: 52px; margin-bottom: 8px;" onerror="this.src='assets/img/icon-512.png';">
+                    <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-main);">Lufya CBT</h3>
+                    <p style="font-size: 0.8125rem; color: var(--text-muted);">Sistem Ujian Berbasis Komputer & Bank Soal Mandiri</p>
+                </div>
+
+                <div class="dev-contact-grid">
+                    <a href="https://wa.me/6289690361144" target="_blank" class="dev-contact-item" title="Hubungi WhatsApp Support">
+                        <div class="dev-icon icon-wa">
+                            <i data-lucide="message-circle" style="width: 20px; height: 20px;"></i>
+                        </div>
+                        <div class="dev-info-text">
+                            <strong>WhatsApp Support</strong>
+                            <small>089690361144</small>
+                        </div>
+                    </a>
+
+                    <a href="mailto:cs.kioskode@gmail.com" target="_blank" class="dev-contact-item" title="Kirim Email Dukungan">
+                        <div class="dev-icon icon-email">
+                            <i data-lucide="mail" style="width: 20px; height: 20px;"></i>
+                        </div>
+                        <div class="dev-info-text">
+                            <strong>Email Resmi</strong>
+                            <small>cs.kioskode@gmail.com</small>
+                        </div>
+                    </a>
+
+                    <a href="https://kioskode.my.id" target="_blank" class="dev-contact-item" title="Kunjungi Website Resmi">
+                        <div class="dev-icon icon-web">
+                            <i data-lucide="globe" style="width: 20px; height: 20px;"></i>
+                        </div>
+                        <div class="dev-info-text">
+                            <strong>Website Resmi</strong>
+                            <small>kioskode.my.id</small>
+                        </div>
+                    </a>
+
+                    <a href="https://lynk.id/kioskode" target="_blank" class="dev-contact-item" title="Kunjungi Toko / Marketplace">
+                        <div class="dev-icon icon-toko">
+                            <i data-lucide="shopping-bag" style="width: 20px; height: 20px;"></i>
+                        </div>
+                        <div class="dev-info-text">
+                            <strong>Toko / Marketplace</strong>
+                            <small>lynk.id/kioskode</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="c-modal-footer">
+                <button type="button" class="btn-c btn-c-primary" onclick="CreatorApp.closeDevInfoModal()" style="width: 100%; justify-content: center;">
+                    <span>Tutup Informasi</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Inputs for Image & Draft JSON File Loaders -->
+    <input type="file" id="hiddenImageFileInput" accept="image/*" style="display: none;">
+    <input type="file" id="hiddenJsonFileInput" accept=".json" style="display: none;">
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container"></div>
+
+    <!-- Application Scripts -->
+    <script src="assets/js/math-palette.js"></script>
+    <script src="assets/js/arabic-palette.js"></script>
+    <script src="assets/js/ai-prompt.js"></script>
+    <script src="assets/js/docx-export.js"></script>
+    <script src="assets/js/excel-export.js"></script>
+    <script src="assets/js/creator.js"></script>
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
