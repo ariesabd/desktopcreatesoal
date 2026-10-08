@@ -1,4 +1,5 @@
-name: Release SoalCreator Desktop
+name: "Update 4 : Build SoalCreator Desktop (.exe & .msi)"
+run-name: "Update 4 : Build SoalCreator Desktop EXE [${{ github.ref_name }}]"
 
 on:
   push:
