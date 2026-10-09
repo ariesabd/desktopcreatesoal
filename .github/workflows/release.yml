@@ -16,8 +16,8 @@ jobs:
       contents: write
     strategy:
       fail-fast: false
-    matrix:
-      platform: [windows-latest]
+      matrix:
+        platform: [windows-latest]
 
     runs-on: ${{ matrix.platform }}
 
