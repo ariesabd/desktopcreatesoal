@@ -57,11 +57,13 @@
             const navText = document.getElementById('navModeText');
             const workPill = document.getElementById('workspaceModePill');
             const landingNav = document.getElementById('landingNavLinks');
+            const landingActions = document.getElementById('landingNavActions');
             const workNav = document.getElementById('workspaceNavActions');
 
             if (hubSec) hubSec.style.display = 'none';
             if (workSec) workSec.style.display = 'block';
             if (landingNav) landingNav.style.display = 'none';
+            if (landingActions) landingActions.style.display = 'none';
             if (workNav) workNav.style.display = 'flex';
             if (navMode) navMode.style.display = 'inline-flex';
 
@@ -117,11 +119,13 @@
             const workSec = document.getElementById('workspaceSection');
             const navMode = document.getElementById('navModeIndicator');
             const landingNav = document.getElementById('landingNavLinks');
+            const landingActions = document.getElementById('landingNavActions');
             const workNav = document.getElementById('workspaceNavActions');
 
             if (hubSec) hubSec.style.display = 'block';
             if (workSec) workSec.style.display = 'none';
             if (landingNav) landingNav.style.display = 'flex';
+            if (landingActions) landingActions.style.display = 'flex';
             if (workNav) workNav.style.display = 'none';
             if (navMode) navMode.style.display = 'none';
 
@@ -208,6 +212,107 @@
                 const subj = (this.metadata && this.metadata.subjectName) ? this.metadata.subjectName : (document.getElementById('metaSubject')?.value || '');
                 window.AIPromptModule.openModal(subj);
             }
+        },
+
+        openConverterModal: function () {
+            const modal = document.getElementById('modalLatexConverter');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.classList.add('active');
+                if (window.lucide) lucide.createIcons();
+                this.runConverter();
+            }
+        },
+
+        closeConverterModal: function () {
+            const modal = document.getElementById('modalLatexConverter');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('active');
+            }
+        },
+
+        loadConverterPreset: function (presetKey) {
+            const PRESETS = {
+                limit_basic: "Nilai lim x->3 (4x^2 + 5x + 1) = .....\nA. 36\nB. 37\nC. 53\nD. 84\nE. 85\nKunci: E",
+                limit_frac: "Nilai lim x->3 (2x^2 + 3x - 2)/(x^2 + 5x + 6) = .....\nA. -5/6\nB. -2/6\nC. 1/6\nD. 2/6\nE. 5/6\nKunci: B",
+                turunan: "Turunan f(x) = 2x + 1/(2x) pada x = 1 adalah .....\nA. 1\nB. 1 1/2\nC. 2\nD. 2 1/2\nE. 3\nKunci: D",
+                akar_pecahan: "Jika f(x) = sqrt(x^2 + 5) dan g(x) = (3x + 1)/(x - 2), maka nilai (f o g)(3) adalah .....\nA. sqrt(105)\nB. 10\nC. sqrt(109)\nD. 12\nE. 15\nKunci: A"
+            };
+            const input = document.getElementById('desktopConverterInput');
+            if (input && PRESETS[presetKey]) {
+                input.value = PRESETS[presetKey];
+                this.runConverter();
+            }
+        },
+
+        runConverter: function () {
+            const input = document.getElementById('desktopConverterInput');
+            const preview = document.getElementById('desktopConverterPreview');
+            if (!input || !preview) return;
+            const raw = input.value.trim();
+            if (!raw) {
+                preview.innerHTML = '<span class="text-muted" style="font-style: italic; font-size: 0.8125rem;">(Hasil render KaTeX akan otomatis muncul di sini)</span>';
+                return;
+            }
+            if (window.MathConverter) {
+                const latex = window.MathConverter.toLatex(raw, { wrapWithDollar: true });
+                window.MathConverter.renderKaTeX(preview, latex);
+            }
+        },
+
+        importConvertedToQuestions: function () {
+            const input = document.getElementById('desktopConverterInput');
+            if (!input) return;
+            const raw = input.value.trim();
+            if (!raw) {
+                this.showToast('Masukkan teks naskah soal terlebih dahulu!', 'warning');
+                return;
+            }
+
+            if (window.MathConverter) {
+                const parsed = window.MathConverter.parseQuestions(raw);
+                if (parsed && parsed.length > 0) {
+                    parsed.forEach(q => {
+                        const newQ = {
+                            id: this.genId(),
+                            number: this.questions.length + 1,
+                            stem: q.stem || '',
+                            options: q.options || { A: '', B: '', C: '', D: '', E: '' },
+                            correctKey: q.correctKey || 'A',
+                            score: q.score || 2,
+                            difficulty: q.difficulty || 'medium',
+                            explanation: q.explanation || ''
+                        };
+                        this.questions.push(newQ);
+                    });
+                    this.saveState();
+                    this.renderAll();
+                    this.closeConverterModal();
+                    this.selectMode('matematika');
+                    this.showToast(`Berhasil menambahkan ${parsed.length} butir soal ke Studio Matematika!`, 'success');
+                    return;
+                }
+            }
+
+            // Fallback: convert text and add 1 question
+            const latex = window.MathConverter ? window.MathConverter.toLatex(raw, { wrapWithDollar: true }) : raw;
+            const newQ = {
+                id: this.genId(),
+                number: this.questions.length + 1,
+                stem: latex,
+                options: { A: '', B: '', C: '', D: '', E: '' },
+                correctKey: 'A',
+                score: 2,
+                difficulty: 'medium',
+                explanation: ''
+            };
+            this.questions.push(newQ);
+            this.saveState();
+            this.renderAll();
+            this.closeConverterModal();
+            this.selectMode('matematika');
+            this.showToast('Berhasil menambahkan soal ke Studio Matematika!', 'success');
         },
 
         // =========================================================================
