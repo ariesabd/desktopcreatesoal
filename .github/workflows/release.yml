@@ -1,5 +1,5 @@
-name: "Update 4 : Build SoalCreator Desktop (.exe & .msi)"
-run-name: "Update 4 : Build SoalCreator Desktop EXE [${{ github.ref_name }}]"
+name: "Build SoalCreator Desktop v2.0 (.exe & .msi)"
+run-name: "Build SoalCreator Desktop v2.0 EXE [${{ github.ref_name }}]"
 
 on:
   push:
@@ -16,8 +16,8 @@ jobs:
       contents: write
     strategy:
       fail-fast: false
-      matrix:
-        platform: [windows-latest]
+    matrix:
+      platform: [windows-latest]
 
     runs-on: ${{ matrix.platform }}
 
@@ -51,16 +51,17 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'SoalCreator Desktop v__VERSION__'
           releaseBody: |
-            ## 🚀 Lufya CBT - SoalCreator Studio Desktop Release
+            ## 🚀 Lufya CBT - SoalCreator Studio Desktop v2.0 Release
 
-            Aplikasi Desktop Mandiri Pembuat Soal Word & Excel CBT (100% Offline tanpa XAMPP/PHP).
+            Aplikasi Desktop Mandiri Pembuat Soal Word & Excel CBT dengan Konverter LaTeX KaTeX (100% Standalone Offline).
 
-            ### Fitur Utama:
-            - **Super Ringan & Cepat:** Ukuran installer kecil dan hemat memori RAM.
-            - **Ekspor Word (.docx):** Format Tabel 3-Kolom resmi CBT & Format Linier.
+            ### Fitur Unggulan v2.0:
+            - **Konverter Persamaan Matematika Word ke LaTeX KaTeX:** Konversi otomatis Limit, Turunan, Pecahan, Akar, Integral, dan Simbol Eksakta.
+            - **Rendering KaTeX Ultra-Cepat:** Pratinjau visual formula matematika presisi tinggi.
+            - **Studio Multi-Mapel:** Studio Matematika & Sains, Studio Bahasa Arab & PAI (RTL + Virtual Harakat Keyboard), Studio Umum, dan AI Prompt Lab.
+            - **Ekspor Word (.docx):** Format Tabel 3-Kolom resmi CBT & Format Linier Siap Cetak.
             - **Ekspor Excel (.xlsx):** Format standar 11-kolom template import Lufya CBT.
-            - **Mode Lengkap:** Matematika (Formula KaTeX), Bahasa Arab (RTL & Harakat), Umum, dan AI Master Prompt.
-            - **100% Offline:** Bekerja langsung di laptop/PC tanpa butuh koneksi internet atau server lokal.
+            - **100% Offline & Ringan:** Tanpa perlu koneksi internet, tanpa XAMPP, dan hemat RAM.
           releaseDraft: false
           prerelease: false
           tauriScript: npx tauri

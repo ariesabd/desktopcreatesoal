@@ -19,6 +19,11 @@
     <script src="assets/libs/xlsx.full.min.js"></script>
     <script src="assets/libs/docx.min.js"></script>
     
+    <!-- KaTeX High-Performance Math Formula Renderer (v0.16.9) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    
     <!-- SoalCreator Stylesheet -->
     <link rel="stylesheet" href="assets/css/creator.css">
 </head>
@@ -425,7 +430,6 @@
             <!-- Developer Information Section on Landing Page -->
             <div id="developerSection" class="dev-landing-section" style="margin-top: 50px; padding-top: 36px; border-top: 1px solid var(--border-color);">
                 <div style="text-align: center; margin-bottom: 28px;">
-                    <span class="creator-logo-badge" style="font-size: 0.75rem; margin-bottom: 8px; display: inline-block;">Pusat Bantuan & Pengembang</span>
                     <h2 style="font-size: 1.375rem; font-weight: 800; color: var(--text-main);">Informasi Pengembang Lufya CBT</h2>
                     <p style="font-size: 0.875rem; color: var(--text-muted); max-width: 600px; margin: 6px auto 0;">
                         Hubungi tim pengembang resmi untuk konsultasi implementasi, bantuan teknis, update berkala, maupun lisensi sistem.
@@ -961,6 +965,7 @@ Pembahasan: Jakarta adalah ibu kota negara.
     <div class="toast-container"></div>
 
     <!-- Application Scripts -->
+    <script src="assets/js/math-converter.js"></script>
     <script src="assets/js/math-palette.js"></script>
     <script src="assets/js/arabic-palette.js"></script>
     <script src="assets/js/ai-prompt.js"></script>

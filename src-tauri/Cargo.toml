@@ -1,7 +1,7 @@
 [package]
 name = "creatorsoal"
-version = "1.0.0"
-description = "Lufya CBT - SoalCreator Studio Desktop"
+version = "2.0.0"
+description = "Lufya CBT - SoalCreator Studio Desktop v2.0"
 authors = ["ariesbd"]
 license = "MIT"
 repository = "https://github.com/ariesabd/desktopcreatesoal"

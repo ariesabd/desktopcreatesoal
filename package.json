@@ -1,7 +1,7 @@
 {
   "name": "desktopcreatesoal",
-  "version": "1.0.0",
-  "description": "Lufya CBT - SoalCreator Studio Desktop App",
+  "version": "2.0.0",
+  "description": "Lufya CBT - SoalCreator Studio Desktop App v2.0",
   "private": true,
   "scripts": {
     "tauri": "tauri",

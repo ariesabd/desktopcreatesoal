@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "creatorsoal",
-    "version": "1.0.0"
+    "version": "2.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -40,7 +40,7 @@
         "icons/icon.png"
       ],
       "identifier": "com.lufyacbt.creatorsoal",
-      "longDescription": "Lufya CBT - Standalone Question Creator Studio for Microsoft Word and Excel CBT Import.",
+      "longDescription": "Lufya CBT - SoalCreator Studio v2.0 Standalone Question Creator Studio with KaTeX LaTeX math equation converter for Microsoft Word and Excel CBT Import.",
       "macOS": {
         "frameworks": [],
         "minimumSystemVersion": "",
@@ -49,7 +49,7 @@
         "entitlements": null
       },
       "resources": [],
-      "shortDescription": "Pembuat Soal Word & Excel CBT Mandiri",
+      "shortDescription": "Pembuat Soal Word & Excel CBT Mandiri v2.0",
       "targets": ["nsis", "msi"],
       "windows": {
         "certificateThumbprint": null,
@@ -68,7 +68,7 @@
         "fullscreen": false,
         "height": 860,
         "resizable": true,
-        "title": "Lufya CBT - SoalCreator Studio",
+        "title": "Lufya CBT - SoalCreator Studio v2.0",
         "width": 1360,
         "minWidth": 800,
         "minHeight": 600,
